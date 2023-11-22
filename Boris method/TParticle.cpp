@@ -1,5 +1,15 @@
 #include "TParticle.h"
 
+TParticle::TParticle() : q(1), gamma_old(0), gamma_new(0)
+{
+	r_old[0] = 0;
+	r_old[1] = 0;
+	r_old[2] = 0;
+	p_old[0] = 0;
+	p_old[1] = 0;
+	p_old[2] = 0;
+}
+
 TParticle::TParticle(double _x, double _y, double _z,
 	double _px, double _py, double _pz, double _q) :	q(_q), gamma_old(0), gamma_new(0)
 {
@@ -23,7 +33,12 @@ void TParticle::updateAllAndPrint(const MyVector& E, const MyVector& B)
 	gamma_new = sqrt(1 + pow(p_old.absValue() / (m * c), 2));
 	v_new = p_new / (gamma_new * m);
 	r_new = r_old + v_new * delta_t;
-	std::cout << "Old particle coordinates:\n x: " << p_old[0] << "\n y: " << p_old[1] << "\n z: " << p_old[2] << "\n";
-	std::cout << "New particle coordinates:\n x: " << p_new[0] << "\n y: " << p_new[1] << "\n z: " << p_new[2] << "\n";
+	std::ofstream fout("partData", std::ios_base::app);
+	fout << r_old[0] << ' ' << r_old[1] << ' ' << r_new[0] << ' ' << r_new[1] << std::endl;
+	fout.close();
+	//std::cout << "Old particle coordinates:\n x: " << r_old[0] << "\n y: " << r_old[1] << "\n z: " << r_old[2] << "\n";
+	//std::cout << "New particle coordinates:\n x: " << r_new[0] << "\n y: " << r_new[1] << "\n z: " << r_new[2] << "\n";
+	//std::cout << "Old particle coordinates:\n x: " << p_old[0] << "\n y: " << p_old[1] << "\n z: " << p_old[2] << "\n";
+	//std::cout << "New particle coordinates:\n x: " << p_new[0] << "\n y: " << p_new[1] << "\n z: " << p_new[2] << "\n";
 }
 

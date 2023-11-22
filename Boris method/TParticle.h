@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <vector>
 #include "MyVector.h"
+#include <fstream>
 #pragma once
 #define c 299792458
 class TParticle
@@ -22,7 +23,7 @@ class TParticle
 	MyVector s;
 	MyVector pDeriv;
 public:
-
+	TParticle();
 	TParticle(double _x, double _y, double _z,
 		double _px, double _py, double _pz, double _q);
 

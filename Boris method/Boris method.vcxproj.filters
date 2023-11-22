@@ -39,4 +39,8 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="partData" />
+    <None Include="pointsOutput.py" />
+  </ItemGroup>
 </Project>

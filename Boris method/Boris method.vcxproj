@@ -24,6 +24,7 @@
     <ProjectGuid>{85cf7ca9-eac5-4213-8b14-1a5985585856}</ProjectGuid>
     <RootNamespace>Borismethod</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>BorisMethod</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,6 +149,10 @@
     <ClInclude Include="MyVector.h" />
     <ClInclude Include="TParticalProxy.h" />
     <ClInclude Include="TParticle.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="partData" />
+    <None Include="pointsOutput.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
