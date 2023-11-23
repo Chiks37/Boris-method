@@ -21,11 +21,14 @@ void main(int argc, char* argv[]) {
 		}
 
 		for (int j = 0; j < itCount; j++) {
-			std::vector<double> tmp = { 2, 2, 2 };
+
+			//std::vector<double> tmp = { 2, 2, 2 };
+			std::vector<double> tmp = { 0, 0, 0 };
 			MyVector E;
 			E = tmp;
 
 			tmp = { 0.1, 0.1, 0.1 };
+			//tmp = { 0, 0, 0};
 			MyVector B;
 			B = tmp;
 
@@ -40,7 +43,7 @@ void main(int argc, char* argv[]) {
 
 				double start = omp_get_wtime();
 				for (int i = 0; i < count; i++) {
-					parts[i].updateAllAndPrint(E, B);
+					parts[0].updateAllAndPrint(E, B, i + 1);
 				}
 				double end = omp_get_wtime();
 

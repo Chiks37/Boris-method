@@ -21,11 +21,11 @@ TParticle::TParticle(double _x, double _y, double _z,
 	p_old[2] = _pz;
 }
 
-void TParticle::updateAllAndPrint(const MyVector& E, const MyVector& B)
+void TParticle::updateAllAndPrint(const MyVector& E, const MyVector& B, const size_t& K)
 {
 	pMinus = p_old + E * q * delta_t / 2;
 	gamma_old = sqrt(1 + pow(p_old.absValue() / (m * c), 2));
-	t = (B * q * delta_t) / (gamma_old * m * c * 2);
+	t = (B * q * delta_t) / (gamma_old * m * c * 2) * K;
 	s = t * 2 / (1 + pow(t.absValue(), 2));
 	pDeriv = pMinus + pMinus.vecMul(t);
 	pPlus = pMinus + pDeriv.vecMul(s);
@@ -34,7 +34,10 @@ void TParticle::updateAllAndPrint(const MyVector& E, const MyVector& B)
 	v_new = p_new / (gamma_new * m);
 	r_new = r_old + v_new * delta_t;
 	std::ofstream fout("partData", std::ios_base::app);
-	fout << r_old[0] << ' ' << r_old[1] << ' ' << r_new[0] << ' ' << r_new[1] << std::endl;
+	if (K == 1) {
+		fout << r_old[0] << ' ' << r_old[1] << ' ' << r_old[2] << std::endl;
+	}
+	fout /*<< r_old[0] << ' ' << r_old[1] << ' ' << r_old[2] << ' ' */<< r_new[0] << ' ' << r_new[1] << ' ' << r_new[2] << std::endl;
 	fout.close();
 	//std::cout << "Old particle coordinates:\n x: " << r_old[0] << "\n y: " << r_old[1] << "\n z: " << r_old[2] << "\n";
 	//std::cout << "New particle coordinates:\n x: " << r_new[0] << "\n y: " << r_new[1] << "\n z: " << r_new[2] << "\n";
