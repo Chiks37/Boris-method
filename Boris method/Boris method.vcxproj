@@ -142,12 +142,10 @@
   <ItemGroup>
     <ClCompile Include="MyVector.cpp" />
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="TParticalProxy.cpp" />
     <ClCompile Include="TParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyVector.h" />
-    <ClInclude Include="TParticalProxy.h" />
     <ClInclude Include="TParticle.h" />
   </ItemGroup>
   <ItemGroup>

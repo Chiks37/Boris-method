@@ -1,64 +1,54 @@
 #include <iostream>
 #include <sstream>
-#include "TParticle.h"
 #include <omp.h>
+#include <fstream>
+#include "TParticle.h"
 
 double rnd() {
 	return rand() % 1000;
 }
-void main(int argc, char* argv[]) {
-	//srand(time(0));
+
+void main(int argc, char* argv[]) { // ¬сего 1 аргумент - количество временных шагов
 	if (argc >= 2) {
-		double timeSum = 0;
 
-		int itCount = 1; //iterations count
-		if (argc >= 3) {
-			std::stringstream tmpStream(argv[2]);
-			if (!(tmpStream >> itCount)) {
-				itCount = 1;
-				std::cout << "Wrong second argument.\n";
-			}
-		}
+		std::vector<double> tmp = { 0, 0, 0 };
+		MyVector E;
+		E = tmp;
 
-		for (int j = 0; j < itCount; j++) {
+		tmp = { 0.1, 0, 0 };
+		MyVector B;
+		B = tmp;
 
-			//std::vector<double> tmp = { 2, 2, 2 };
-			std::vector<double> tmp = { 0, 0, 0 };
-			MyVector E;
-			E = tmp;
+		std::stringstream tmpStream(argv[1]);
+		double stepsCount;
 
-			tmp = { 0.1, 0.1, 0.1 };
-			//tmp = { 0, 0, 0};
-			MyVector B;
-			B = tmp;
+		if (tmpStream >> stepsCount) {
 
-			std::stringstream tmpStream(argv[1]);
-			double count;
-			if (tmpStream >> count) {
-				TParticle* parts = new TParticle[count];
-				for (int i = 0; i < count; i++) {
-					parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
-				}
-				//TParticle part(0, 0, 0, 1, 1, 1, 1);
+			TParticle part(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
+
+			std::ofstream fout("partData", std::ios_base::app);
+			fout.clear();
+			MyVector r;
+			double time = 0;
+			for (int i = 0; i < stepsCount; i++) {
 
 				double start = omp_get_wtime();
-				for (int i = 0; i < count; i++) {
-					parts[0].updateAllAndPrint(E, B, i + 1);
-				}
+				r = part.makeOneStep(E, B);
 				double end = omp_get_wtime();
+				time += end - start;
 
-				double time = end - start;
-				//double time = ((double)end - start) / ((double)CLOCKS_PER_SEC);
-				std::cout << "Execution time: " << time << " seconds.\n";
-				timeSum += time;
 
-				delete[] parts;
+
+				std::cout << r[0] << ' ' << r[1] << ' ' << r[2] << std::endl;
 			}
-			else {
-				std::cout << "Wrong first argument.\n";
-			}
+			fout.close();
+
+			std::cout << "Execution time: " << time << " seconds.\n";
+
 		}
-		std::cout << "  AVERAGE TIME: " << timeSum / itCount << " seconds.\n";
+		else {
+			std::cout << "Wrong argument.\n";
+		}
 	}
 	else {
 		std::cout << "Need to pass argument.\n";
