@@ -39,7 +39,7 @@ void main(int argc, char* argv[]) { // ¬сего 1 аргумент - количество временных ш
 
 
 
-				std::cout << r[0] << ' ' << r[1] << ' ' << r[2] << std::endl;
+				fout << r[0] << ' ' << r[1] << ' ' << r[2] << std::endl;
 			}
 			fout.close();
 
