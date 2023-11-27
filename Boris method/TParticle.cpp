@@ -18,9 +18,9 @@ TParticle::TParticle(double _x, double _y, double _z,
 	r_old[1] = _y;
 	r_old[2] = _z;
 
-	p_old[0] = 0;
-	p_old[1] = 0;
-	p_old[2] = 2e6 * m;
+	p_old[0] = _px;
+	p_old[1] = _py;
+	p_old[2] = _pz;
 }
 
 MyVector TParticle::makeOneStep(const MyVector& E, const MyVector& B)
@@ -32,12 +32,13 @@ MyVector TParticle::makeOneStep(const MyVector& E, const MyVector& B)
 	pDeriv		= pMinus + pMinus.vecMul(t);
 	pPlus		= pMinus + pDeriv.vecMul(s);
 	p_new		= pPlus + E * q * delta_t / 2;
-	gamma_new	= sqrt(1 + pow(p_old.absValue() / (m * c), 2));
+	gamma_new	= sqrt(1 + pow(p_new.absValue() / (m * c), 2));
 	v_new		= p_new / (gamma_new * m);
 	r_new		= r_old + v_new * delta_t;
 
 	p_old = p_new;
 	r_old = r_new;
+	v_old = v_new;
 
 	return r_new;
 }

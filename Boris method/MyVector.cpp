@@ -13,14 +13,14 @@ MyVector::MyVector(const MyVector& vec2)
 double MyVector::absValue()
 {
 	double sqrSum = vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2];
-	return pow(sqrSum, 1 / 2);
+	return pow(sqrSum, 0.5);
 }
 
 MyVector MyVector::vecMul(MyVector vec2)
 {
 	MyVector res;
 	res.vec.resize(3);
-	res.vec[0] = vec[2] * vec2.vec[1] - vec[1] * vec2.vec[2];
+	res.vec[0] = vec[1] * vec2.vec[2] - vec[2] * vec2.vec[1];
 	res.vec[1] = vec[2] * vec2.vec[0] - vec[0] * vec2.vec[2];
 	res.vec[2] = vec[0] * vec2.vec[1] - vec[1] * vec2.vec[0];
 	return res;
