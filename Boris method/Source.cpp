@@ -1,11 +1,102 @@
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include <sstream>
 #include <omp.h>
 #include <fstream>
 #include "TParticle.h"
+#include <math.h>
 
 double rnd() {
 	return rand() % 1000;
+}
+
+bool relAccelInStatFieldTest() {
+
+	const double qe = -4.803e-10;
+	const double me = 9.10958215e-28;
+	const double Ex = 2;
+	const int stepsCount = 100;
+	const double dt = me * c / (qe * Ex * stepsCount);
+	//const double v0 = 0;
+
+	std::vector<double> tmp = { Ex, 0, 0 };
+	MyVector E;
+	E = tmp;
+
+	tmp = { 0, 0, 0 };
+	MyVector B;
+	B = tmp;
+
+	TParticle part(0, 0, 0, 0, 0, 0);
+	part.m = me;
+	part.q = qe;
+	part.delta_t = dt;
+
+	for (int i = 0; i < stepsCount - 1; i++) {
+		part.makeOneStep(E, B);
+	}
+	MyVector rResult = part.makeOneStep(E, B);
+	MyVector pResult = part.getP();
+
+	tmp = { me*c*c / (qe * Ex), 0, 0 };
+	MyVector rAnalitic;
+	rAnalitic = tmp;
+
+	tmp = { me * c, 0, 0 };
+	MyVector pAnalitic;
+	rAnalitic = tmp;
+
+	std::cout << "Relativistic acceleration in statick field test:\n";
+	std::cout << rResult[0] << ' ' << rResult[1] << ' ' << rResult[2] << std::endl;
+	std::cout << pResult[0] << ' ' << pResult[1] << ' ' << pResult[2] << std::endl;
+	std::cout << rAnalitic[0] << ' ' << rAnalitic[1] << ' ' << rAnalitic[2] << std::endl;
+	std::cout << pAnalitic[0] << ' ' << pAnalitic[1] << ' ' << pAnalitic[2] << "\n\n";
+	return true;
+}
+
+bool osciInStaticMagFieldTest() {
+
+	const double qe = -4.803e-10;
+	const double me = 9.10958215e-28;
+	const double Bz = 0.1;
+	const int stepsCount = 100;
+	const double v0 = 3e8; //recheck!
+	const double px = me * v0;
+	const double dt = M_PI * me * c * sqrt(1 + pow(px / (me * c), 2)) / (abs(qe) * Bz * stepsCount);
+
+	std::vector<double> tmp = { 0, 0, 0 };
+	MyVector E;
+	E = tmp;
+
+	tmp = { 0, 0, Bz };
+	MyVector B;
+	B = tmp;
+
+	TParticle part(0, 0, 0, px, 0, 0);	
+	part.m = me;
+	part.q = qe;
+	part.delta_t = dt;
+
+	for (int i = 0; i < stepsCount - 1; i++) {
+		part.makeOneStep(E, B);
+	}
+	MyVector rResult = part.makeOneStep(E, B);
+	MyVector pResult = part.getP();
+
+	tmp = { 0, -2 * px * c / (qe * Bz), 0 };
+	MyVector rAnalitic;
+	rAnalitic = tmp;
+
+	tmp = {-px, 0, 0 };
+	MyVector pAnalitic;
+	rAnalitic = tmp;
+
+	std::cout << "Oscilation in a static magnet field test:\n";
+	std::cout << rResult[0] << ' ' << rResult[1] << ' ' << rResult[2] << std::endl;
+	std::cout << pResult[0] << ' ' << pResult[1] << ' ' << pResult[2] << std::endl;
+	std::cout << rAnalitic[0] << ' ' << rAnalitic[1] << ' ' << rAnalitic[2] << std::endl;
+	std::cout << pAnalitic[0] << ' ' << pAnalitic[1] << ' ' << pAnalitic[2] << "\n\n";
+	return true;
 }
 
 // TEST CONFIGURATION:
@@ -21,56 +112,47 @@ double rnd() {
 // x, y axes -> motion in a circle
 // z axis -> uniformly accelerated motion
 
-void main(int argc, char* argv[]) { // Всего 1 аргумент - количество временных шагов
+void main(int argc, char* argv[]) { // Всего 1 аргумент - количество элементов
+	relAccelInStatFieldTest();
+	osciInStaticMagFieldTest();
 	if (argc >= 2) {
 
-		const double qe = -4.803e-10;
-		const double me = 9.10958215e-28;
-		const double Bz = 0.1;
-		const double Ez = 0.00001;  // small E to avoid relativistic case
-		const double omega = qe * Bz / me / c;
-		const double v0 = omega;  // v0 << c, non-relativistic case
-		const double gamma0 = 1.0 / sqrt(1.0 - v0 * v0 / (c * c));
-		const double dt = 1e-13*omega;
-		const double T = 2 * 3.1415 / omega;  // period, dt should be less than T
+		//const double qe = -4.803e-10;
+		//const double me = 9.10958215e-28;
+		//const double Bz = 0.1;
+		//const double Ez = 0.00001;  // small E to avoid relativistic case
+		//const double omega = qe * Bz / me / c;
+		//const double v0 = omega;  // v0 << c, non-relativistic case
+		//const double gamma0 = 1.0 / sqrt(1.0 - v0 * v0 / (c * c));
+		//const double dt = 1e-13*omega;
+		//const double T = 2 * 3.1415 / omega;  // period, dt should be less than T
 
-		std::vector<double> tmp = { 0, 0, Ez };
+		std::vector<double> tmp = { 2, 2, 2 };
 		MyVector E;
 		E = tmp;
 
-		tmp = { 0, 0, Bz };
+		tmp = { 0.1, 0.1, 0.1 };
 		MyVector B;
 		B = tmp;
 
 		std::stringstream tmpStream(argv[1]);
-		double stepsCount;
+		double partsCount;
 
-		if (tmpStream >> stepsCount) {
+		if (tmpStream >> partsCount) {
 
-			//TParticle part(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
-			TParticle part(-v0 / omega, 0, 0, 0, gamma0*me*v0, 0);
-			part.delta_t = dt;
-
-			std::ofstream fout("partData");  // clear and open for writing
-
-			MyVector r;
-			double time = 0;
-			for (int i = 0; i < stepsCount; i++) {
-
-				double start = omp_get_wtime();
-				r = part.makeOneStep(E, B);
-				double end = omp_get_wtime();
-				time += end - start;
-
-				fout << r[0] << ' ' << r[1] << ' ' << r[2] << std::endl;
-				
-				//double t = (i + 1) * dt;
-				//fout << -v0 / omega * cos(omega * t) << ' ' << v0 / omega * sin(omega * t) << ' ' << qe*Ez / me * t * t * 0.5 << std::endl;
+			TParticle* parts = new TParticle[partsCount];
+			for (int i = 0; i < partsCount; i++) {
+				parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
 			}
-			fout.close();
 
+			double start = omp_get_wtime();
+			for (int i = 0; i < partsCount; i++) {
+				parts[i].makeOneStep(E, B);
+			}
+			double end = omp_get_wtime();
+
+			double time = end - start;
 			std::cout << "Execution time: " << time << " seconds.\n";
-
 		}
 		else {
 			std::cout << "Wrong argument.\n";
@@ -79,5 +161,4 @@ void main(int argc, char* argv[]) { // Всего 1 аргумент - количество временных ш
 	else {
 		std::cout << "Need to pass argument.\n";
 	}
-	system("python pointsOutput.py");
 }

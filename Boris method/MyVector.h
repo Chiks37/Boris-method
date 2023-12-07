@@ -15,5 +15,6 @@ public:
 	MyVector operator+(const MyVector& vec2);
 	MyVector operator*(const double& op2) const;
 	MyVector operator/(const double& op2) const;
+	bool operator==(const MyVector& vec2) const;
 };
 

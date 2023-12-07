@@ -68,3 +68,8 @@ MyVector MyVector::operator/(const double& op2) const
 	}
 	return res;
 }
+
+bool MyVector::operator==(const MyVector& vec2) const
+{
+	return *this == vec2;
+}

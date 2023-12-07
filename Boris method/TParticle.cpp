@@ -43,3 +43,8 @@ MyVector TParticle::makeOneStep(const MyVector& E, const MyVector& B)
 	return r_new;
 }
 
+MyVector TParticle::getP()
+{
+	return p_old;
+}
+

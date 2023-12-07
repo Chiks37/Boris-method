@@ -33,6 +33,7 @@ public:
 		double _px, double _py, double _pz);
 
 	MyVector makeOneStep(const MyVector& E, const MyVector& B);
+	MyVector getP();
 
 };
 
