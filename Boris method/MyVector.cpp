@@ -5,9 +5,12 @@ MyVector::MyVector()
 	vec.resize(3);
 }
 
-MyVector::MyVector(const MyVector& vec2)
+MyVector::MyVector(const MyVector& vec2) : vec(vec2.vec)
 {
-	vec = vec2.vec;
+}
+
+MyVector::MyVector(const std::vector<double>& vec2) : vec(vec2)
+{
 }
 
 double MyVector::absValue()
@@ -26,9 +29,9 @@ MyVector MyVector::vecMul(MyVector vec2)
 	return res;
 }
 
-MyVector& MyVector::operator=(std::vector<double> vec2)
+MyVector& MyVector::operator=(const MyVector& vec2)
 {
-	vec = vec2;
+	vec = vec2.vec;
 	return (*this);
 }
 
