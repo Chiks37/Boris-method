@@ -10,6 +10,32 @@ double rnd() {
 	return rand() % 1000;
 }
 
+void calculate(TParticle* parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
+{	
+	for (int i = 0; i < partsCount; i++)
+	{
+#pragma omp simd
+		for (int j = 0; j < iterCount; j++)
+		{
+			parts[i].pMinus = parts[i].p_old + E * parts[i].q * parts[i].delta_t / 2;
+			parts[i].gamma_old = sqrt(1 + pow(parts[i].p_old.absValue() / (parts[i].m * c), 2));
+			parts[i].t = (B * parts[i].q * parts[i].delta_t) / (parts[i].gamma_old * parts[i].m * c * 2);
+			parts[i].s = parts[i].t * 2 / (1 + pow(parts[i].t.absValue(), 2));
+			parts[i].pDeriv = parts[i].pMinus + parts[i].pMinus.vecMul(parts[i].t);
+			parts[i].pPlus = parts[i].pMinus + parts[i].pDeriv.vecMul(parts[i].s);
+			parts[i].p_new = parts[i].pPlus + E * parts[i].q * parts[i].delta_t / 2;
+			parts[i].gamma_new = sqrt(1 + pow(parts[i].p_new.absValue() / (parts[i].m * c), 2));
+			parts[i].v_new = parts[i].p_new / (parts[i].gamma_new * parts[i].m);
+			parts[i].r_new = parts[i].r_old + parts[i].v_new * parts[i].delta_t;
+
+			parts[i].p_old = parts[i].p_new;
+			parts[i].r_old = parts[i].r_new;
+			parts[i].v_old = parts[i].v_new;
+			//parts[i].makeOneStep(E, B);
+		}
+	}
+}
+
 bool relAccelInStatFieldTest() {
 
 	const double qe = -4.803e-10;
@@ -153,11 +179,7 @@ void main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итер
 			}
 
 			double start = omp_get_wtime();
-			for (int j = 0; j < iterCount; j++) {
-				for (int i = 0; i < partsCount; i++) {
-					parts[i].makeOneStep(E, B);
-				}
-			}
+			calculate(parts, partsCount, iterCount, E, B);
 			double end = omp_get_wtime();
 
 			double time = end - start;
