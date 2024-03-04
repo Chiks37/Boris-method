@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <math.h>
 class MyVector
 {
 	std::vector<double> vec;

@@ -140,7 +140,7 @@ bool osciInStaticMagFieldTest() {
 // x, y axes -> motion in a circle
 // z axis -> uniformly accelerated motion
 
-void main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итераций
+int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итераций
 	relAccelInStatFieldTest();
 	osciInStaticMagFieldTest();
 	if (argc >= 2) {
@@ -170,7 +170,7 @@ void main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итер
 		MyVector B(tmp);
 
 		std::stringstream tmpStream(argv[1]);
-		double partsCount;
+		int  partsCount;
 
 		if (tmpStream >> partsCount) {
 			TParticle* parts = new TParticle[partsCount];
@@ -192,4 +192,5 @@ void main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итер
 	else {
 		std::cout << "Need to pass argument.\n";
 	}
+	return 0;
 }
