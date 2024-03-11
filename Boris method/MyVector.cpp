@@ -2,15 +2,23 @@
 
 MyVector::MyVector()
 {
-	vec.resize(3);
+	vec[0] = 0;
+	vec[1] = 0;
+	vec[2] = 0;
 }
 
-MyVector::MyVector(const MyVector& vec2) : vec(vec2.vec)
+MyVector::MyVector(const MyVector& vec2)
 {
+	vec[0] = vec2.vec[0];
+	vec[1] = vec2.vec[1];
+	vec[2] = vec2.vec[2];
 }
 
-MyVector::MyVector(const std::vector<double>& vec2) : vec(vec2)
+MyVector::MyVector(const double vec2[3])
 {
+	vec[0] = vec[0];
+	vec[1] = vec[1];
+	vec[2] = vec[2];
 }
 
 double MyVector::absValue()
@@ -22,7 +30,6 @@ double MyVector::absValue()
 MyVector MyVector::vecMul(MyVector vec2)
 {
 	MyVector res;
-	res.vec.resize(3);
 	res.vec[0] = vec[1] * vec2.vec[2] - vec[2] * vec2.vec[1];
 	res.vec[1] = vec[2] * vec2.vec[0] - vec[0] * vec2.vec[2];
 	res.vec[2] = vec[0] * vec2.vec[1] - vec[1] * vec2.vec[0];
@@ -31,7 +38,9 @@ MyVector MyVector::vecMul(MyVector vec2)
 
 MyVector& MyVector::operator=(const MyVector& vec2)
 {
-	vec = vec2.vec;
+	vec[0] = vec2.vec[0];
+	vec[1] = vec2.vec[1];
+	vec[2] = vec2.vec[2];
 	return (*this);
 }
 
@@ -48,7 +57,8 @@ const double& MyVector::operator[](const int& num) const
 MyVector MyVector::operator+(const MyVector& vec2)
 {
 	MyVector res(*this);
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
+	{
 		res[i] += vec2[i];
 	}
 	return res;
@@ -57,7 +67,8 @@ MyVector MyVector::operator+(const MyVector& vec2)
 MyVector MyVector::operator*(const double& op2) const
 {
 	MyVector res(*this);
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
+	{
 		res[i] *= op2;
 	}
 	return res;
@@ -66,13 +77,14 @@ MyVector MyVector::operator*(const double& op2) const
 MyVector MyVector::operator/(const double& op2) const
 {
 	MyVector res(*this);
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
+	{
 		res[i] /= op2;
 	}
 	return res;
 }
 
-bool MyVector::operator==(const MyVector& vec2) const
-{
-	return *this == vec2;
-}
+//bool MyVector::operator==(const MyVector& vec2) const
+//{
+//	return *this == vec2;
+//}

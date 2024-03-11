@@ -1,14 +1,14 @@
 #pragma once
 #include <iostream>
-#include <vector>
 #include <math.h>
+
 class MyVector
 {
-	std::vector<double> vec;
+	double vec[3];
 public:
 	MyVector();
 	MyVector(const MyVector& vec2);
-	MyVector(const std::vector<double>& vec2);
+	MyVector(const double vec2[3]);
 	double absValue();
 	MyVector vecMul(MyVector vec2);
 	MyVector& operator=(const MyVector& vec2);
@@ -17,6 +17,6 @@ public:
 	MyVector operator+(const MyVector& vec2);
 	MyVector operator*(const double& op2) const;
 	MyVector operator/(const double& op2) const;
-	bool operator==(const MyVector& vec2) const;
+	//bool operator==(const MyVector& vec2) const;
 };
 

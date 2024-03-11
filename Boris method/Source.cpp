@@ -11,20 +11,21 @@ double rnd() {
 }
 
 void calculate(TParticle* parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
-{	
-	for (int i = 0; i < partsCount; i++)
+{
+	for (int j = 0; j < iterCount; j++)
 	{
 #pragma omp simd
-		for (int j = 0; j < iterCount; j++)
+		//#pragma ivdep
+		for (int i = 0; i < partsCount; i++)
 		{
 			parts[i].pMinus = parts[i].p_old + E * parts[i].q * parts[i].delta_t / 2;
-			parts[i].gamma_old = sqrt(1 + pow(parts[i].p_old.absValue() / (parts[i].m * c), 2));
+			//parts[i].gamma_old = sqrt(1 + pow(parts[i].p_old.absValue() / (parts[i].m * c), 2));
 			parts[i].t = (B * parts[i].q * parts[i].delta_t) / (parts[i].gamma_old * parts[i].m * c * 2);
-			parts[i].s = parts[i].t * 2 / (1 + pow(parts[i].t.absValue(), 2));
-			parts[i].pDeriv = parts[i].pMinus + parts[i].pMinus.vecMul(parts[i].t);
-			parts[i].pPlus = parts[i].pMinus + parts[i].pDeriv.vecMul(parts[i].s);
+			//parts[i].s = parts[i].t * 2 / (1 + pow(parts[i].t.absValue(), 2));
+			//parts[i].pDeriv = parts[i].pMinus + parts[i].pMinus.vecMul(parts[i].t);
+			//parts[i].pPlus = parts[i].pMinus + parts[i].pDeriv.vecMul(parts[i].s);
 			parts[i].p_new = parts[i].pPlus + E * parts[i].q * parts[i].delta_t / 2;
-			parts[i].gamma_new = sqrt(1 + pow(parts[i].p_new.absValue() / (parts[i].m * c), 2));
+			//parts[i].gamma_new = sqrt(1 + pow(parts[i].p_new.absValue() / (parts[i].m * c), 2));
 			parts[i].v_new = parts[i].p_new / (parts[i].gamma_new * parts[i].m);
 			parts[i].r_new = parts[i].r_old + parts[i].v_new * parts[i].delta_t;
 
@@ -43,15 +44,16 @@ bool relAccelInStatFieldTest() {
 	const double Ex = 2;
 	const int stepsCount = 100;
 	const double dt = me * c / (qe * Ex * stepsCount * 1e6);
-	//const double v0 = 0;
 
-	std::vector<double> tmp = { Ex, 0, 0 };
 	MyVector E;
-	E = tmp;
+	E[0] = Ex;
+	E[1] = 0;
+	E[2] = 0;
 
-	tmp = { 0, 0, 0 };
 	MyVector B;
-	B = tmp;
+	B[0] = 0;
+	B[1] = 0;
+	B[2] = 0;
 
 	TParticle part(0, 0, 0, 0, 0, 0);
 	part.m = me;
@@ -64,11 +66,15 @@ bool relAccelInStatFieldTest() {
 	MyVector rResult = part.makeOneStep(E, B);
 	MyVector pResult = part.getP();
 
-	tmp = { me * c * c / (2 * qe * Ex * 1e12), 0, 0 };
-	MyVector rAnalitic = tmp;
+	MyVector rAnalitic;
+	rAnalitic[0] = me * c * c / (2 * qe * Ex * 1e12);
+	rAnalitic[1] = 0;
+	rAnalitic[2] = 0;
 
-	tmp = { me * c / 1e6, 0, 0 };
-	MyVector pAnalitic = tmp;
+	MyVector pAnalitic;
+	pAnalitic[0] = me * c / 1e6;
+	pAnalitic[1] = 0;
+	pAnalitic[2] = 0;
 
 	std::cout << "Relativistic acceleration in statick field test:\nCalculated coordinates: ";
 	std::cout << rResult[0] << ' ' << rResult[1] << ' ' << rResult[2] << std::endl;
@@ -87,17 +93,19 @@ bool osciInStaticMagFieldTest() {
 	const double me = 9.10958215e-28;
 	const double Bz = 0.1;
 	const int stepsCount = 100;
-	const double v0 = 3e8; 
+	const double v0 = 3e8;
 	const double px = me * v0; //recheck
 	const double dt = M_PI * me * c * sqrt(1 + pow(px / (me * c), 2)) / (abs(qe) * Bz * stepsCount);
 
-	std::vector<double> tmp = { 0, 0, 0 };
 	MyVector E;
-	E = tmp;
+	E[0] = 0;
+	E[1] = 0;
+	E[2] = 0;
 
-	tmp = { 0, 0, Bz };
 	MyVector B;
-	B = tmp;
+	B[0] = 0;
+	B[1] = 0;
+	B[2] = Bz;
 
 	TParticle part(0, 0, 0, px, 0, 0);
 	part.m = me;
@@ -110,11 +118,15 @@ bool osciInStaticMagFieldTest() {
 	MyVector rResult = part.makeOneStep(E, B);
 	MyVector pResult = part.getP();
 
-	tmp = { 0, -2 * px * c / (qe * Bz), 0 };
-	MyVector rAnalitic = tmp;
+	MyVector rAnalitic;
+	rAnalitic[0] = 0;
+	rAnalitic[1] = -2 * px * c / (qe * Bz);
+	rAnalitic[2] = 0;
 
-	tmp = { -px, 0, 0 };
-	MyVector pAnalitic = tmp;
+	MyVector pAnalitic;
+	pAnalitic[0] = -px;
+	pAnalitic[1] = 0;
+	pAnalitic[2] = 0;
 
 	std::cout << "Oscilation in a static magnet field test:\nCalculated coordinates: ";
 	std::cout << rResult[0] << ' ' << rResult[1] << ' ' << rResult[2] << std::endl;
@@ -163,11 +175,15 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 			}
 		}
 
-		std::vector<double> tmp = { 2, 2, 2 };
-		MyVector E(tmp);
+		MyVector E;
+		E[0] = 2;
+		E[1] = 2;
+		E[2] = 2;
 
-		tmp = { 0.1, 0.1, 0.1 };
-		MyVector B(tmp);
+		MyVector B;
+		B[0] = 0.1;
+		B[1] = 0.1;
+		B[2] = 0.1;
 
 		std::stringstream tmpStream(argv[1]);
 		int  partsCount;
@@ -184,6 +200,8 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 
 			double time = end - start;
 			std::cout << "Execution time: " << time << " seconds.\n";
+			
+			delete[] parts;
 		}
 		else {
 			std::cout << "Wrong argument.\n";
