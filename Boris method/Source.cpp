@@ -6,34 +6,16 @@
 #include "TParticle.h"
 #include <math.h>
 
-double rnd() {
-	return rand() % 1000;
-}
+//double rnd() {
+//	return rand() % 1000;
+//}
 
-void calculate(TParticle* parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
+void calculate(TParticle parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
 {
 	for (int j = 0; j < iterCount; j++)
 	{
-#pragma omp simd
-		//#pragma ivdep
-		for (int i = 0; i < partsCount; i++)
-		{
-			parts[i].pMinus = parts[i].p_old + E * parts[i].q * parts[i].delta_t / 2;
-			//parts[i].gamma_old = sqrt(1 + pow(parts[i].p_old.absValue() / (parts[i].m * c), 2));
-			parts[i].t = (B * parts[i].q * parts[i].delta_t) / (parts[i].gamma_old * parts[i].m * c * 2);
-			//parts[i].s = parts[i].t * 2 / (1 + pow(parts[i].t.absValue(), 2));
-			//parts[i].pDeriv = parts[i].pMinus + parts[i].pMinus.vecMul(parts[i].t);
-			//parts[i].pPlus = parts[i].pMinus + parts[i].pDeriv.vecMul(parts[i].s);
-			parts[i].p_new = parts[i].pPlus + E * parts[i].q * parts[i].delta_t / 2;
-			//parts[i].gamma_new = sqrt(1 + pow(parts[i].p_new.absValue() / (parts[i].m * c), 2));
-			parts[i].v_new = parts[i].p_new / (parts[i].gamma_new * parts[i].m);
-			parts[i].r_new = parts[i].r_old + parts[i].v_new * parts[i].delta_t;
-
-			parts[i].p_old = parts[i].p_new;
-			parts[i].r_old = parts[i].r_new;
-			parts[i].v_old = parts[i].v_new;
-			//parts[i].makeOneStep(E, B);
-		}
+//#pragma omp simd
+		parts.makeOneStep(E, B);
 	}
 }
 
@@ -55,7 +37,7 @@ bool relAccelInStatFieldTest() {
 	B[1] = 0;
 	B[2] = 0;
 
-	TParticle part(0, 0, 0, 0, 0, 0);
+	TParticle part(0, 0, 0, 0, 0, 0, 1);
 	part.m = me;
 	part.q = qe;
 	part.delta_t = dt;
@@ -63,8 +45,8 @@ bool relAccelInStatFieldTest() {
 	for (int i = 0; i < stepsCount - 1; i++) {
 		part.makeOneStep(E, B);
 	}
-	MyVector rResult = part.makeOneStep(E, B);
-	MyVector pResult = part.getP();
+	MyVector rResult = part.makeOneStep(E, B)[0];
+	MyVector pResult = part.getP()[0];
 
 	MyVector rAnalitic;
 	rAnalitic[0] = me * c * c / (2 * qe * Ex * 1e12);
@@ -107,7 +89,7 @@ bool osciInStaticMagFieldTest() {
 	B[1] = 0;
 	B[2] = Bz;
 
-	TParticle part(0, 0, 0, px, 0, 0);
+	TParticle part(0, 0, 0, px, 0, 0, 1);
 	part.m = me;
 	part.q = qe;
 	part.delta_t = dt;
@@ -115,8 +97,8 @@ bool osciInStaticMagFieldTest() {
 	for (int i = 0; i < stepsCount - 1; i++) {
 		part.makeOneStep(E, B);
 	}
-	MyVector rResult = part.makeOneStep(E, B);
-	MyVector pResult = part.getP();
+	MyVector rResult = part.makeOneStep(E, B)[0];
+	MyVector pResult = part.getP()[0];
 
 	MyVector rAnalitic;
 	rAnalitic[0] = 0;
@@ -189,10 +171,7 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 		int  partsCount;
 
 		if (tmpStream >> partsCount) {
-			TParticle* parts = new TParticle[partsCount];
-			for (int i = 0; i < partsCount; i++) {
-				parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
-			}
+			TParticle parts(partsCount);
 
 			double start = omp_get_wtime();
 			calculate(parts, partsCount, iterCount, E, B);
@@ -200,8 +179,6 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 
 			double time = end - start;
 			std::cout << "Execution time: " << time << " seconds.\n";
-			
-			delete[] parts;
 		}
 		else {
 			std::cout << "Wrong argument.\n";
