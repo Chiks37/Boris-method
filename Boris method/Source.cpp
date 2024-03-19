@@ -12,36 +12,35 @@ double rnd() {
 
 void calculate(TParticle* parts, const int partsCount, const int iterCount, const MyVector& E, const MyVector& B)
 {
-	double tempSqr;
-	double temp;
-	double temp1;
-	double temp2;
 	for (int j = 0; j < iterCount; j++)
 	{
 #pragma omp simd
-//#pragma ivdep
-//#pragma vector always
-//#pragma novector
+		//#pragma ivdep
+		//#pragma vector always
+		//#pragma novector
 		for (int i = 0; i < partsCount; i++)
 		{
-			parts[i].pMinus = parts[i].p_old + E * parts[i].q * parts[i].delta_t * 0.5;
-			parts[i].gamma_old = sqrt(1.0 + (parts[i].p_old.absValue() / (parts[i].m * c)) * (parts[i].p_old.absValue() / (parts[i].m * c)));
-			parts[i].t = (B * parts[i].q * parts[i].delta_t) / (parts[i].gamma_old * parts[i].m * c * 2.0);
-			parts[i].s = parts[i].t * 2.0 / (1.0 + (parts[i].t.absValue()) * (parts[i].t.absValue()));
-			parts[i].pDeriv = parts[i].pMinus + parts[i].pMinus.vecMul(parts[i].t);
-			parts[i].pPlus = parts[i].pMinus + parts[i].pDeriv.vecMul(parts[i].s);
-			parts[i].p_new = parts[i].pPlus + E * parts[i].q * parts[i].delta_t * 0.5;
-			temp1 = parts[i].p_new.absValue();
-			temp2 = parts[i].m * c;
-			temp = temp1 / temp2;
-			tempSqr =  temp * temp;
-			parts[i].gamma_new = sqrt(1.0 + tempSqr);
-			parts[i].v_new = parts[i].p_new / (parts[i].gamma_new * parts[i].m);
-			parts[i].r_new = parts[i].r_old + parts[i].v_new * parts[i].delta_t;
+			double delta_t = 1e-12;
 
-			parts[i].p_old = parts[i].p_new;
-			parts[i].r_old = parts[i].r_new;
-			parts[i].v_old = parts[i].v_new;
+			MyVector pMinus = parts[i].p_old + E * parts[i].q * delta_t * 0.5;
+			double gamma_old = sqrt(1.0 + (parts[i].p_old.absValue() / (parts[i].m * c)) * (parts[i].p_old.absValue() / (parts[i].m * c)));
+			MyVector t = (B * parts[i].q * delta_t) / (gamma_old * parts[i].m * c * 2.0);
+			MyVector s = t * 2.0 / (1.0 + (t.absValue()) * (t.absValue()));
+			MyVector pDeriv = pMinus + pMinus.vecMul(t);
+			MyVector pPlus = pMinus + pDeriv.vecMul(s);
+			MyVector p_new = pPlus + E * parts[i].q * delta_t * 0.5;
+
+			double temp1 = p_new.absValue();
+			double temp2 = parts[i].m * c;
+			double temp = temp1 / temp2;
+			double tempSqr = temp * temp;
+			double gamma_new = sqrt(1.0 + tempSqr);
+
+			MyVector v_new = p_new / (gamma_new * parts[i].m);
+			MyVector r_new = parts[i].r_old + v_new * delta_t;
+
+			parts[i].p_old = p_new;
+			parts[i].r_old = r_new;
 			//parts[i].makeOneStep(E, B);
 		}
 	}
