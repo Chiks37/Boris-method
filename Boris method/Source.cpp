@@ -12,6 +12,10 @@ double rnd() {
 
 void calculate(TParticle* parts, const int partsCount, const int iterCount, const MyVector& E, const MyVector& B)
 {
+	double tempSqr;
+	double temp;
+	double temp1;
+	double temp2;
 	for (int j = 0; j < iterCount; j++)
 	{
 #pragma omp simd
@@ -27,7 +31,11 @@ void calculate(TParticle* parts, const int partsCount, const int iterCount, cons
 			parts[i].pDeriv = parts[i].pMinus + parts[i].pMinus.vecMul(parts[i].t);
 			parts[i].pPlus = parts[i].pMinus + parts[i].pDeriv.vecMul(parts[i].s);
 			parts[i].p_new = parts[i].pPlus + E * parts[i].q * parts[i].delta_t * 0.5;
-			parts[i].gamma_new = sqrt(1.0 + (parts[i].p_new.absValue() / (parts[i].m * c)) * (parts[i].p_new.absValue() / (parts[i].m * c)));
+			temp1 = parts[i].p_new.absValue();
+			temp2 = parts[i].m * c;
+			temp = temp1 / temp2;
+			tempSqr =  temp * temp;
+			parts[i].gamma_new = sqrt(1.0 + tempSqr);
 			parts[i].v_new = parts[i].p_new / (parts[i].gamma_new * parts[i].m);
 			parts[i].r_new = parts[i].r_old + parts[i].v_new * parts[i].delta_t;
 
