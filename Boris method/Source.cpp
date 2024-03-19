@@ -8,21 +8,21 @@
 
 double rnd() {
 	return rand() % 1000;
-}
+}	
 
-void calculate(TParticle* parts, const int partsCount, const int iterCount, const MyVector& E, const MyVector& B)
+void calculate(TParticle* parts, const int& partsCount, const int& iterCount, const MyVector& E, const MyVector& B, double delta_t = 1e-12)
 {
 	for (int j = 0; j < iterCount; j++)
 	{
-#pragma omp simd
+//#pragma omp simd
 		//#pragma ivdep
 		//#pragma vector always
 		//#pragma novector
 		for (int i = 0; i < partsCount; i++)
 		{
-			double delta_t = 1e-12;
+			double temp_pMin = parts[i].q * delta_t * 0.5;
+			MyVector pMinus = parts[i].p_old + E * temp_pMin;
 
-			MyVector pMinus = parts[i].p_old + E * parts[i].q * delta_t * 0.5;
 			double gamma_old = sqrt(1.0 + (parts[i].p_old.absValue() / (parts[i].m * c)) * (parts[i].p_old.absValue() / (parts[i].m * c)));
 			MyVector t = (B * parts[i].q * delta_t) / (gamma_old * parts[i].m * c * 2.0);
 			MyVector s = t * 2.0 / (1.0 + (t.absValue()) * (t.absValue()));
@@ -30,11 +30,11 @@ void calculate(TParticle* parts, const int partsCount, const int iterCount, cons
 			MyVector pPlus = pMinus + pDeriv.vecMul(s);
 			MyVector p_new = pPlus + E * parts[i].q * delta_t * 0.5;
 
-			double temp1 = p_new.absValue();
-			double temp2 = parts[i].m * c;
-			double temp = temp1 / temp2;
-			double tempSqr = temp * temp;
-			double gamma_new = sqrt(1.0 + tempSqr);
+			double temp1_gn = p_new.absValue();
+			double temp2_gn = parts[i].m * c;
+			double temp_gn = temp1_gn / temp2_gn;
+			double tempSqr_gn = temp_gn * temp_gn;
+			double gamma_new = sqrt(1.0 + tempSqr_gn);
 
 			MyVector v_new = p_new / (gamma_new * parts[i].m);
 			MyVector r_new = parts[i].r_old + v_new * delta_t;
@@ -44,6 +44,14 @@ void calculate(TParticle* parts, const int partsCount, const int iterCount, cons
 			//parts[i].makeOneStep(E, B);
 		}
 	}
+}
+
+void makeOneStep(TParticle part, const int& iterCount, const MyVector& E, const MyVector& B, double dt)
+{
+	TParticle* dynamicPart = new TParticle(part.r_old[0], part.r_old[1], part.r_old[2], part.p_old[0], part.p_old[1], part.p_old[2]);
+	calculate(dynamicPart, 1, 1, E, B, dt);
+	part.p_old = dynamicPart->p_old;
+	part.r_old = dynamicPart->r_old;
 }
 
 bool relAccelInStatFieldTest() {
@@ -67,13 +75,15 @@ bool relAccelInStatFieldTest() {
 	TParticle part(0, 0, 0, 0, 0, 0);
 	part.m = me;
 	part.q = qe;
-	part.delta_t = dt;
+	double delta_t = dt;
+	//part.delta_t = dt;
 
-	for (int i = 0; i < stepsCount - 1; i++) {
+	makeOneStep(part, stepsCount, E, B, dt);
+	/*for (int i = 0; i < stepsCount - 1; i++) {
 		part.makeOneStep(E, B);
-	}
-	MyVector rResult = part.makeOneStep(E, B);
-	MyVector pResult = part.getP();
+	}*/
+	MyVector rResult = part.r_old;
+	MyVector pResult = part.p_old;
 
 	MyVector rAnalitic;
 	rAnalitic[0] = me * c * c / (2 * qe * Ex * 1e12);
@@ -119,13 +129,14 @@ bool osciInStaticMagFieldTest() {
 	TParticle part(0, 0, 0, px, 0, 0);
 	part.m = me;
 	part.q = qe;
-	part.delta_t = dt;
+	double delta_t = dt;
 
-	for (int i = 0; i < stepsCount - 1; i++) {
+	makeOneStep(part, stepsCount, E, B, dt);
+	/*for (int i = 0; i < stepsCount - 1; i++) {
 		part.makeOneStep(E, B);
-	}
-	MyVector rResult = part.makeOneStep(E, B);
-	MyVector pResult = part.getP();
+	}*/
+	MyVector rResult = part.r_old;
+	MyVector pResult = part.p_old;
 
 	MyVector rAnalitic;
 	rAnalitic[0] = 0;
