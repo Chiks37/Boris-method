@@ -10,13 +10,18 @@
 //	return rand() % 1000;
 //}
 
-void calculate(TParticle parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
+void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
 {
 	for (int j = 0; j < iterCount; j++)
 	{
 //#pragma omp simd
 		parts.makeOneStep(E, B);
 	}
+}
+
+void makeOneStep(TParticle& part, const int& iterCount, const MyVector& E, const MyVector& B)
+{
+	calculate(part, 1, iterCount, E, B);
 }
 
 bool relAccelInStatFieldTest() {
@@ -41,11 +46,12 @@ bool relAccelInStatFieldTest() {
 	part.m = me;
 	part.q = qe;
 	part.delta_t = dt;
+	part.qdthbased = qe * dt * 0.5;
+	part.mcbased = me * c;
 
-	for (int i = 0; i < stepsCount - 1; i++) {
-		part.makeOneStep(E, B);
-	}
-	MyVector rResult = part.makeOneStep(E, B)[0];
+	makeOneStep(part, stepsCount, E, B);
+
+	MyVector rResult = part.r_old[0];
 	MyVector pResult = part.getP()[0];
 
 	MyVector rAnalitic;
@@ -93,11 +99,12 @@ bool osciInStaticMagFieldTest() {
 	part.m = me;
 	part.q = qe;
 	part.delta_t = dt;
+	part.qdthbased = qe * dt * 0.5;
+	part.mcbased = me * c;
 
-	for (int i = 0; i < stepsCount - 1; i++) {
-		part.makeOneStep(E, B);
-	}
-	MyVector rResult = part.makeOneStep(E, B)[0];
+	makeOneStep(part, stepsCount, E, B);
+
+	MyVector rResult = part.r_old[0];
 	MyVector pResult = part.getP()[0];
 
 	MyVector rAnalitic;

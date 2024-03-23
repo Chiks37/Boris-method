@@ -139,14 +139,18 @@ MyVector* TParticle::makeOneStep(const MyVector& E, const MyVector& B)
 {
 	for (int i = 0; i < partsCount; i++)
 	{
-		pMinus[i] = p_old[i] + E * q * delta_t / 2;
-		gamma_old[i] = sqrt(1 + (p_old[i].absValue() / (m * c)) * (p_old[i].absValue() / (m * c)));
-		t[i] = (B * q * delta_t) / (gamma_old[i] * m * c * 2);
-		s[i] = t[i] * 2 / (1 + (t[i].absValue()) * (t[i].absValue()));
+		double mc = mcbased;
+		double qdt = qdtbased;
+		double qdth = qdthbased;
+
+		pMinus[i] = p_old[i] + E * qdth;
+		gamma_old[i] = sqrt(1.0 + (p_old[i].absValue() / mc) * (p_old[i].absValue() / mc));
+		t[i] = (B * qdt * 0.5) / (gamma_old[i] * mc);
+		s[i] = t[i] * 2.0 / (1.0 + (t[i].absValue()) * (t[i].absValue()));
 		pDeriv[i] = pMinus[i] + pMinus[i].vecMul(t[i]);
 		pPlus[i] = pMinus[i] + pDeriv[i].vecMul(s[i]);
-		p_new[i] = pPlus[i] + E * q * delta_t / 2;
-		gamma_new[i] = sqrt(1 + (p_new[i].absValue() / (m * c)) * (p_new[i].absValue() / (m * c)));
+		p_new[i] = pPlus[i] + E * qdth;
+		gamma_new[i] = sqrt(1 + (p_new[i].absValue() / mc) * (p_new[i].absValue() / mc));
 		v_new[i] = p_new[i] / (gamma_new[i] * m);
 		r_new[i] = r_old[i] + v_new[i] * delta_t;
 
