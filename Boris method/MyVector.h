@@ -68,5 +68,7 @@ public:
 		return res;
 	}
 	//bool operator==(const MyVector& vec2) const;
+	friend std::ostream& operator<<(std::ostream& os, const MyVector& vec);
+
 };
 

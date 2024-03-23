@@ -89,3 +89,8 @@ __forceinline MyVector MyVector::operator/(const double& op2) const
 //	return *this == vec2;
 //}
 */
+std::ostream& operator<<(std::ostream& os, const MyVector& vec)
+{
+	os << vec[0] << ' ' << vec[1] << ' ' << vec[2] << '\n';
+	return os;
+}

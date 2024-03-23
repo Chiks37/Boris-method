@@ -10,10 +10,6 @@
 class TParticle
 {
 public:
-	//Необходимость использование double или float требует дальнейшего исследования
-	double m = 9.10958215e-28;  // use more exact constants
-	double q = -4.803e-10;
-
 	MyVector r_old; // Particle position (x, y, z)
 	MyVector p_old; // Particle momentum (px, py, pz)
 public:
