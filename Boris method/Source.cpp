@@ -16,6 +16,7 @@ void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& 
 	{
 //#pragma omp simd
 		parts.makeOneStep(E, B);
+		std::cout << parts.pMinus[0];
 	}
 }
 
@@ -177,7 +178,7 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 		std::stringstream tmpStream(argv[1]);
 		int  partsCount;
 
-		if (tmpStream >> partsCount) {
+		if (tmpStream >> partsCount && partsCount != 0) {
 			TParticle parts(partsCount);
 
 			double start = omp_get_wtime();

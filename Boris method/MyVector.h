@@ -17,6 +17,7 @@ public:
 	MyVector operator+(const MyVector& vec2);
 	MyVector operator*(const double& op2) const;
 	MyVector operator/(const double& op2) const;
+	friend std::ostream& operator<<(std::ostream& os, const MyVector& vec);
 	//bool operator==(const MyVector& vec2) const;
 };
 

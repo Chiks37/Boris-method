@@ -84,6 +84,11 @@ MyVector MyVector::operator/(const double& op2) const
 	return res;
 }
 
+std::ostream& operator<<(std::ostream& os, const MyVector& vec)
+{
+	os << vec[0] << ' ' << vec[1] << ' ' << vec[2] << '\n';
+	return os;
+}
 //bool MyVector::operator==(const MyVector& vec2) const
 //{
 //	return *this == vec2;
