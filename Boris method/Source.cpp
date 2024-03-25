@@ -16,7 +16,6 @@ void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& 
 	{
 //#pragma omp simd
 		parts.makeOneStep(E, B);
-		std::cout << parts.pMinus[0];
 	}
 }
 

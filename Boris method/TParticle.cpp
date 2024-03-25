@@ -140,12 +140,11 @@ MyVector* TParticle::makeOneStep(const MyVector& E, const MyVector& B)
 	for (int i = 0; i < partsCount; i++)
 	{
 		double mc = mcbased;
-		double qdt = qdtbased;
 		double qdth = qdthbased;
 
 		pMinus[i] = p_old[i] + E * qdth;
 		gamma_old[i] = sqrt(1.0 + (p_old[i].absValue() / mc) * (p_old[i].absValue() / mc));
-		t[i] = (B * qdt * 0.5) / (gamma_old[i] * mc);
+		t[i] = (B * qdth) / (gamma_old[i] * mc);
 		s[i] = t[i] * 2.0 / (1.0 + (t[i].absValue()) * (t[i].absValue()));
 		pDeriv[i] = pMinus[i] + pMinus[i].vecMul(t[i]);
 		pPlus[i] = pMinus[i] + pDeriv[i].vecMul(s[i]);

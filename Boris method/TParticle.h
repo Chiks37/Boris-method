@@ -30,8 +30,7 @@ public:
 	MyVector* pDeriv;
 
 	double mcbased = m * c;
-	double qdtbased = q * delta_t;
-	double qdthbased = qdtbased * 0.5;
+	double qdthbased = q * delta_t * 0.5;
 
 	TParticle(double _x, double _y, double _z,
 		double _px, double _py, double _pz, int _partsCount);
