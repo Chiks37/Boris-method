@@ -137,6 +137,9 @@ TParticle::TParticle(const TParticle& ob2) : partsCount(ob2.partsCount)
 
 MyVector* TParticle::makeOneStep(const MyVector& E, const MyVector& B)
 {
+#pragma omp simd
+//#pragma ivdep
+//#pragma vector always
 	for (int i = 0; i < partsCount; i++)
 	{
 		double mc = mcbased;

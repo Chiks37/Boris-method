@@ -14,7 +14,6 @@ void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& 
 {
 	for (int j = 0; j < iterCount; j++)
 	{
-//#pragma omp simd
 		parts.makeOneStep(E, B);
 	}
 }
