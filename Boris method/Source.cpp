@@ -5,6 +5,9 @@
 #include <fstream>
 #include "TParticle.h"
 #include <math.h>
+#include <cmath>
+
+int NUM_THREADS = 1;
 
 double rnd() {
 	return rand() % 1000;
@@ -15,28 +18,37 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 	double m = 9.10958215e-28;
 	double q = -4.803e-10;
 	const double mcbased = m * c;
-	const double qdtbased = q * dt * 0.5;
+	const double qdthbased = q * dt * 0.5;
 
 	for (int j = 0; j < iterCount; j++)
 	{
-#pragma omp simd
+		//#pragma omp simd
 		//#pragma ivdep
 		//#pragma vector always
 		//#pragma novector
+
+		//#pragma parallel for
+
+		omp_set_num_threads(NUM_THREADS);
+//#pragma omp parallel for
+			//#pragma omp for simd
+//#pragma novector
+#pragma omp parallel for simd 
+//#pragma omp for nowait
 		for (int i = 0; i < partsCount; i++)
 		{
 			double mc = mcbased;
-			double qdt = qdtbased;
+			double qdth = qdthbased;
 			double delta_t = dt;
 
-			double temp_pMin = qdt;
+			double temp_pMin = qdth;
 			MyVector pMinus = parts[i].p_old + E * temp_pMin;
 
 			double temp1_go = parts[i].p_old.absValue() / mc;
 			double temp_go = temp1_go * temp1_go;
 			double gamma_old = sqrt(1.0 + temp_go);
 
-			MyVector t = (B * qdt) / (gamma_old * mc);
+			MyVector t = (B * qdth) / (gamma_old * mc);
 
 			double temp_s1 = t.absValue();
 			double temp_s = temp_s1 * temp_s1;
@@ -44,7 +56,7 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 
 			MyVector pDeriv = pMinus + pMinus.vecMul(t);
 			MyVector pPlus = pMinus + pDeriv.vecMul(s);
-			MyVector p_new = pPlus + E * qdt;
+			MyVector p_new = pPlus + E * qdth;
 
 			double temp1_gn = p_new.absValue();
 			double temp2_gn = mc;
@@ -56,7 +68,8 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 			MyVector r_new = parts[i].r_old + v_new * delta_t;
 
 			parts[i].p_old = p_new;
-			parts[i].r_old = r_new;		}
+			parts[i].r_old = r_new;
+		}
 	}
 }
 
@@ -123,8 +136,7 @@ bool osciInStaticMagFieldTest() {
 	const int stepsCount = 100;
 	const double v0 = 3e8;
 	const double px = me * v0; //recheck
-	const double dt = M_PI * me * c * sqrt(1 + pow(px / (me * c), 2)) / (abs(qe) * Bz * stepsCount);
-
+	const double dt = M_PI * me * c * sqrt(1 + pow(px / (me * c), 2)) / (qe * (-1) * Bz * stepsCount);
 	MyVector E;
 	E[0] = 0;
 	E[1] = 0;
@@ -214,19 +226,26 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 		int  partsCount;
 
 		if (tmpStream >> partsCount) {
-			TParticle* parts = new TParticle[partsCount];
-			for (int i = 0; i < partsCount; i++) {
-				parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
+			for (NUM_THREADS = 1; NUM_THREADS <= 6; NUM_THREADS++)
+			{
+				std::cout << "\n\nNUM THREADS:" << NUM_THREADS << '\n';
+				for (int i = 0; i < 3; i++)
+				{
+					TParticle* parts = new TParticle[partsCount];
+					for (int i = 0; i < partsCount; i++) {
+						parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
+					}
+
+					double start = omp_get_wtime();
+					calculate(parts, partsCount, iterCount, E, B);
+					double end = omp_get_wtime();
+
+					double time = end - start;
+					std::cout << "Execution time: " << time << " seconds.\n";
+
+					delete[] parts;
+				}
 			}
-
-			double start = omp_get_wtime();
-			calculate(parts, partsCount, iterCount, E, B);
-			double end = omp_get_wtime();
-
-			double time = end - start;
-			std::cout << "Execution time: " << time << " seconds.\n";
-
-			delete[] parts;
 		}
 		else {
 			std::cout << "Wrong argument.\n";
