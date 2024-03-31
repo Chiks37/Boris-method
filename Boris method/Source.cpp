@@ -30,9 +30,9 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 		//#pragma parallel for
 
 		omp_set_num_threads(NUM_THREADS);
-//#pragma omp parallel for
-			//#pragma omp for simd
-//#pragma novector
+		//#pragma omp parallel for
+					//#pragma omp for simd
+		//#pragma novector
 #pragma omp parallel for simd 
 //#pragma omp for nowait
 		for (int i = 0; i < partsCount; i++)
@@ -137,6 +137,7 @@ bool osciInStaticMagFieldTest() {
 	const double v0 = 3e8;
 	const double px = me * v0; //recheck
 	const double dt = M_PI * me * c * sqrt(1 + pow(px / (me * c), 2)) / (qe * (-1) * Bz * stepsCount);
+
 	MyVector E;
 	E[0] = 0;
 	E[1] = 0;
@@ -225,33 +226,50 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 		std::stringstream tmpStream(argv[1]);
 		int  partsCount;
 
-		if (tmpStream >> partsCount) {
-			for (NUM_THREADS = 1; NUM_THREADS <= 6; NUM_THREADS++)
+		if (tmpStream >> partsCount)
+		{
+			if (argc >= 4)
 			{
-				std::cout << "\n\nNUM THREADS:" << NUM_THREADS << '\n';
-				for (int i = 0; i < 3; i++)
+				std::stringstream tmpStream(argv[3]);
+				int tmp;
+				if (tmpStream >> tmp && tmp > 0 && tmp <= 32)
 				{
-					TParticle* parts = new TParticle[partsCount];
-					for (int i = 0; i < partsCount; i++) {
-						parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
-					}
-
-					double start = omp_get_wtime();
-					calculate(parts, partsCount, iterCount, E, B);
-					double end = omp_get_wtime();
-
-					double time = end - start;
-					std::cout << "Execution time: " << time << " seconds.\n";
-
-					delete[] parts;
+					NUM_THREADS = tmp;
+				}
+				else
+				{
+					std::cout << "Wrong threads num. Default = 1.\n";
 				}
 			}
+			else
+			{
+				std::cout << "Default threads num = 1. \n";
+			}
+			std::cout << "\n\nNUM THREADS:" << NUM_THREADS << '\n';
+
+			TParticle* parts = new TParticle[partsCount];
+#pragma omp parallel for
+			for (int i = 0; i < partsCount; i++) {
+				parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
+			}
+
+			double start = omp_get_wtime();
+			calculate(parts, partsCount, iterCount, E, B);
+			double end = omp_get_wtime();
+
+			double time = end - start;
+			std::cout << "Execution time: " << time << " seconds.\n";
+
+			delete[] parts;
+
 		}
-		else {
+		else
+		{
 			std::cout << "Wrong argument.\n";
 		}
 	}
-	else {
+	else
+	{
 		std::cout << "Need to pass argument.\n";
 	}
 	return 0;
