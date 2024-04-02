@@ -6,6 +6,7 @@
 #include <math.h>
 #include <cmath>
 #include <chrono>
+#include <riscv-vector.h>
 
 double rnd() {
 	return rand() % 1000;
@@ -15,25 +16,34 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 {
 	double m = 9.10958215e-28;
 	double q = -4.803e-10;
-	const double mcbased = m * c;
-	const double qdthbased = q * dt * 0.5;
+
+	double mcbased = m * c;
+	double qdtbased = q * dt * 0.5;
+
+	int vl = vsetvlmax_e32m4();
+	vfloat32m4_t mcbasedv = vfmv_v_f_f32m4( mcbased, vl);
+
+	vfloat32m4_t qdthbasedv = vfmv_v_f_f32m4(qdtbased, vl);
+
+	vfloat32m4_t dtv = vfmv_v_f_f32m4(dt, vl);
 
 	for (int j = 0; j < iterCount; j++)
 	{
 		for (int i = 0; i < partsCount; i++)
 		{
-			double mc = mcbased;
-			double qdth = qdthbased;
-			double delta_t = dt;
+			vfloat32m4_t mcv = mcbasedv;
+			vfloat32m4_t qdthv = qdthbasedv;
+			vfloat32m4_t delta_tv = dtv;
 
-			double temp_pMin = qdth;
-			MyVector pMinus = parts[i].p_old + E * temp_pMin;
+			//MyVector pMinus = parts[i].p_old + E * qdthv;
+			vfloat32m4_t p_old1v = parts[i].p_old[0];
+			vfloat32m4_t pMinus1v = /////////////////////// EDIT FROM HERE
 
-			double temp1_go = parts[i].p_old.absValue() / mc;
+			double temp1_go = parts[i].p_old.absValue() / mcv;
 			double temp_go = temp1_go * temp1_go;
 			double gamma_old = sqrt(1.0 + temp_go);
 
-			MyVector t = (B * qdth) / (gamma_old * mc);
+			MyVector t = (B * qdthv) / (gamma_old * mcv);
 
 			double temp_s1 = t.absValue();
 			double temp_s = temp_s1 * temp_s1;
@@ -41,16 +51,16 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 
 			MyVector pDeriv = pMinus + pMinus.vecMul(t);
 			MyVector pPlus = pMinus + pDeriv.vecMul(s);
-			MyVector p_new = pPlus + E * qdth;
+			MyVector p_new = pPlus + E * qdthv;
 
 			double temp1_gn = p_new.absValue();
-			double temp2_gn = mc;
+			double temp2_gn = mcv;
 			double temp_gn = temp1_gn / temp2_gn;
 			double tempSqr_gn = temp_gn * temp_gn;
 			double gamma_new = sqrt(1.0 + tempSqr_gn);
 
 			MyVector v_new = p_new / (gamma_new * m);
-			MyVector r_new = parts[i].r_old + v_new * delta_t;
+			MyVector r_new = parts[i].r_old + v_new * delta_tv;
 
 			parts[i].p_old = p_new;
 			parts[i].r_old = r_new;
