@@ -1,13 +1,11 @@
 #define _USE_MATH_DEFINES
 #include <iostream>
 #include <sstream>
-#include <omp.h>
 #include <fstream>
 #include "TParticle.h"
 #include <math.h>
 #include <cmath>
-
-int NUM_THREADS = 1;
+#include <chrono>
 
 double rnd() {
 	return rand() % 1000;
@@ -22,19 +20,6 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 
 	for (int j = 0; j < iterCount; j++)
 	{
-		//#pragma omp simd
-		//#pragma ivdep
-		//#pragma vector always
-		//#pragma novector
-
-		//#pragma parallel for
-
-		omp_set_num_threads(NUM_THREADS);
-		//#pragma omp parallel for
-					//#pragma omp for simd
-		//#pragma novector
-#pragma omp parallel for simd 
-//#pragma omp for nowait
 		for (int i = 0; i < partsCount; i++)
 		{
 			double mc = mcbased;
@@ -177,34 +162,11 @@ bool osciInStaticMagFieldTest() {
 	return true;
 }
 
-// TEST CONFIGURATION:
-// non-relativistic case, v << c, gamma->1
-// Ex = Ey = Bx = By = 0, Ez=E, Bz=B
-// v(t) = (vx(t), vy(t), vz(t)), v(0) = (0, v0, 0)
-// r(t) = (rx(t), ry(t), rz(t)), r(0) = (-v0/omega, 0, 0)
-// omega = qB/(mc)
-//
-// ANALYTICAL SOLUTION:
-// v(t) = (v0*sin(omega*t), v0*cos(omega*t), qE/m*t)
-// r(t) = (-v0/omega*cos(omega*t), v0/omega*sin(omega*t), qE/m*t*t/2)
-// x, y axes -> motion in a circle
-// z axis -> uniformly accelerated motion
-
 int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итераций
 	relAccelInStatFieldTest();
 	osciInStaticMagFieldTest();
-	if (argc >= 2) {
-
-		//const double qe = -4.803e-10;
-		//const double me = 9.10958215e-28;
-		//const double Bz = 0.1;
-		//const double Ez = 0.00001;  // small E to avoid relativistic case
-		//const double omega = qe * Bz / me / c;
-		//const double v0 = omega;  // v0 << c, non-relativistic case
-		//const double gamma0 = 1.0 / sqrt(1.0 - v0 * v0 / (c * c));
-		//const double dt = 1e-13*omega;
-		//const double T = 2 * 3.1415 / omega;  // period, dt should be less than T
-
+	if (argc >= 2) 
+	{
 		int iterCount = 100;
 		if (argc >= 3) {
 			std::stringstream tmpStream(argv[2]);
@@ -228,37 +190,17 @@ int main(int argc, char* argv[]) { // 2 аргумента - количество элементов и итера
 
 		if (tmpStream >> partsCount)
 		{
-			if (argc >= 4)
-			{
-				std::stringstream tmpStream(argv[3]);
-				int tmp;
-				if (tmpStream >> tmp && tmp > 0 && tmp <= 32)
-				{
-					NUM_THREADS = tmp;
-				}
-				else
-				{
-					std::cout << "Wrong threads num. Default = 1.\n";
-				}
-			}
-			else
-			{
-				std::cout << "Default threads num = 1. \n";
-			}
-			std::cout << "\n\nNUM THREADS:" << NUM_THREADS << '\n';
-
 			TParticle* parts = new TParticle[partsCount];
-#pragma omp parallel for
 			for (int i = 0; i < partsCount; i++) {
 				parts[i] = TParticle(rnd(), rnd(), rnd(), rnd(), rnd(), rnd());
 			}
 
-			double start = omp_get_wtime();
+			auto start = std::chrono::high_resolution_clock::now(); // фиксация времени начала выполнения функции
 			calculate(parts, partsCount, iterCount, E, B);
-			double end = omp_get_wtime();
+			auto end = std::chrono::high_resolution_clock::now(); // фиксация времени окончания выполнения функции
 
-			double time = end - start;
-			std::cout << "Execution time: " << time << " seconds.\n";
+			std::chrono::duration<double> time = end - start; // вычисление продолжительности выполнения функции
+			std::cout << "Execution time: " << time.count() << " seconds.\n";
 
 			delete[] parts;
 
