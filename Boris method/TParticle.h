@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include <iostream>
+//#include <iostream>
 #include <vector>
 #include "MyVector.h"
-#include <fstream>
+//#include <fstream>
 
 // CGS units
 #define c 2.99792458e10

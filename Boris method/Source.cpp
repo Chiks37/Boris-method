@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES
-#include <iostream>
+//#include <iostream>
 #include <sstream>
 #include <omp.h>
 #include <fstream>
@@ -35,6 +35,7 @@ void calculate(TParticle* parts, const int& partsCount, const int& iterCount, co
 		//#pragma novector
 #pragma omp parallel for simd 
 //#pragma omp for nowait
+//#pragma novector
 		for (int i = 0; i < partsCount; i++)
 		{
 			double mc = mcbased;
