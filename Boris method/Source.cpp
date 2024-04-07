@@ -10,17 +10,71 @@
 //	return rand() % 1000;
 //}
 
-void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B)
+void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B, double dt = 1e-12)
 {
+	double m = 9.10958215e-28;  // use more exact constants
+	double* gamma_old = new double[parts.partsCount];
+	double* gamma_new = new double[parts.partsCount];
+	double q = -4.803e-10;
+	double delta_t = dt;
+	MyVector* r_new = new MyVector[parts.partsCount];
+	MyVector* v_old = new MyVector[parts.partsCount];
+	MyVector* v_new = new MyVector[parts.partsCount];
+	MyVector* t = new MyVector[parts.partsCount];
+	MyVector* pMinus = new MyVector[parts.partsCount];
+	MyVector* pPlus = new MyVector[parts.partsCount];
+	MyVector* p_new = new MyVector[parts.partsCount];
+	MyVector* s = new MyVector[parts.partsCount];
+	MyVector* pDeriv = new MyVector[parts.partsCount];
+
+	double mcbased = m * c;
+	double qdthbased = q * delta_t * 0.5;
+
 	for (int j = 0; j < iterCount; j++)
 	{
-		parts.makeOneStep(E, B);
+//#pragma omp parallel for simd
+		for (int i = 0; i < partsCount; i++)
+		{
+			double mc = mcbased;
+			double qdth = qdthbased;
+
+			pMinus[i] = parts.p_old[i] + E * qdth;
+			gamma_old[i] = sqrt(1.0 + (parts.p_old[i].absValue() / mc) * (parts.p_old[i].absValue() / mc));
+			t[i] = (B * qdth) / (gamma_old[i] * mc);
+			s[i] = t[i] * 2.0 / (1.0 + (t[i].absValue()) * (t[i].absValue()));
+			pDeriv[i] = pMinus[i] + pMinus[i].vecMul(t[i]);
+			pPlus[i] = pMinus[i] + pDeriv[i].vecMul(s[i]);
+			p_new[i] = pPlus[i] + E * qdth;
+			gamma_new[i] = sqrt(1 + (p_new[i].absValue() / mc) * (p_new[i].absValue() / mc));
+			v_new[i] = p_new[i] / (gamma_new[i] * m);
+			r_new[i] = parts.r_old[i] + v_new[i] * delta_t;
+
+			parts.p_old[i] = p_new[i];
+			parts.r_old[i] = r_new[i];
+
+		/*	if (i == 0 && j == 0)
+			{
+				std::cout << pMinus[i] << '\n' << gamma_old[i] << '\n' << t[i] << '\n' << s[i] << '\n' << pDeriv[i] << '\n' << pPlus[i] << '\n' << p_new[i] << '\n' << gamma_new[i] << '\n' << v_new[i] << '\n' << r_new[i] << '\n' << parts.p_old[i] << '\n' << parts.r_old[i] << '\n';
+			}*/
+		}
+		//parts.makeOneStep(E, B);
 	}
+	delete[] gamma_old;
+	delete[] gamma_new;
+	delete[] r_new;
+	delete[] v_old;
+	delete[] v_new;
+	delete[] t;
+	delete[] pMinus;
+	delete[] pPlus;
+	delete[] p_new;
+	delete[] s;
+	delete[] pDeriv;
 }
 
-void makeOneStep(TParticle& part, const int& iterCount, const MyVector& E, const MyVector& B)
+void makeOneStep(TParticle& part, const int& iterCount, const MyVector& E, const MyVector& B, double dt)
 {
-	calculate(part, 1, iterCount, E, B);
+	calculate(part, 1, iterCount, E, B, dt);
 }
 
 bool relAccelInStatFieldTest() {
@@ -42,13 +96,13 @@ bool relAccelInStatFieldTest() {
 	B[2] = 0;
 
 	TParticle part(0, 0, 0, 0, 0, 0, 1);
-	part.m = me;
-	part.q = qe;
-	part.delta_t = dt;
-	part.qdthbased = qe * dt * 0.5;
-	part.mcbased = me * c;
+	double m = me;
+	double q = qe;
+	//double delta_t = dt;
+	double qdthbased = qe * dt * 0.5;
+	double mcbased = me * c;
 
-	makeOneStep(part, stepsCount, E, B);
+	makeOneStep(part, stepsCount, E, B, dt);
 
 	MyVector rResult = part.r_old[0];
 	MyVector pResult = part.getP()[0];
@@ -95,13 +149,13 @@ bool osciInStaticMagFieldTest() {
 	B[2] = Bz;
 
 	TParticle part(0, 0, 0, px, 0, 0, 1);
-	part.m = me;
-	part.q = qe;
-	part.delta_t = dt;
-	part.qdthbased = qe * dt * 0.5;
-	part.mcbased = me * c;
+	double m = me;
+	double q = qe;
+	//double delta_t = dt;
+	double qdthbased = qe * dt * 0.5;
+	double mcbased = me * c;
 
-	makeOneStep(part, stepsCount, E, B);
+	makeOneStep(part, stepsCount, E, B, dt);
 
 	MyVector rResult = part.r_old[0];
 	MyVector pResult = part.getP()[0];
