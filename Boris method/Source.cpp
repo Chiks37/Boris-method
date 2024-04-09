@@ -32,7 +32,7 @@ void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& 
 
 	for (int j = 0; j < iterCount; j++)
 	{
-//#pragma omp parallel for simd
+#pragma omp parallel for simd
 		for (int i = 0; i < partsCount; i++)
 		{
 			double mc = mcbased;
