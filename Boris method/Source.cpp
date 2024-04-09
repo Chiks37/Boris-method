@@ -5,6 +5,7 @@
 #include <fstream>
 #include "TParticle.h"
 #include <math.h>
+#include <risc-v.h>
 
 //double rnd() {
 //	return rand() % 1000;
@@ -12,18 +13,100 @@
 
 void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& E, const MyVector& B, double dt = 1e-12)
 {
+	size_t vl = vsetvl_e32m1(parts.partsCount);
+
 	double m = 9.10958215e-28;  // use more exact constants
+	vfloat32m1_t mV = vfmv_v_f_f32m1(m, vl);
+
 	double* gamma_old = new double[parts.partsCount];
+	vfloat32m1_t goV = vle_v_f32m1(gamma_old, vl);
+
 	double* gamma_new = new double[parts.partsCount];
+	vfloat32m1_t gnV = vle_v_f32m1(gamma_old, vl);
+
 	double q = -4.803e-10;
+	vfloat32m1_t qV = vfmv_v_f_f32m1(q, vl);
+
 	double delta_t = dt;
-	MyVector* r_new = new MyVector[parts.partsCount];
-	MyVector* v_old = new MyVector[parts.partsCount];
-	MyVector* v_new = new MyVector[parts.partsCount];
-	MyVector* t = new MyVector[parts.partsCount];
-	MyVector* pMinus = new MyVector[parts.partsCount];
-	MyVector* pPlus = new MyVector[parts.partsCount];
-	MyVector* p_new = new MyVector[parts.partsCount];
+	vfloat32m1_t dtV = vfmv_v_f_f32m1(dt, vl);
+
+
+	//MyVector* r_new = new MyVector[parts.partsCount];
+	double* r_new0 = new double[parts.partsCount];
+	vfloat32m1_t rn0V = vle_v_f32m1(r_new0, vl);
+
+	double* r_new1 = new double[parts.partsCount];
+	vfloat32m1_t rn1V = vle_v_f32m1(r_new1, vl);
+
+	double* r_new2 = new double[parts.partsCount];
+	vfloat32m1_t rn2V = vle_v_f32m1(r_new2, vl);
+
+
+	//MyVector* v_old = new MyVector[parts.partsCount];
+	double* v_old0 = new double[parts.partsCount];
+	vfloat32m1_t vo0V = vle_v_f32m1(v_old0, vl);
+
+	double* v_old1 = new double[parts.partsCount];
+	vfloat32m1_t vo1V = vle_v_f32m1(v_old1, vl);
+
+	double* v_old2 = new double[parts.partsCount];
+	vfloat32m1_t vo2V = vle_v_f32m1(v_old2, vl);
+
+
+	//MyVector* v_new = new MyVector[parts.partsCount];
+	double* v_new0 = new double[parts.partsCount];
+	vfloat32m1_t vn0V = vle_v_f32m1(v_new0, vl);
+
+	double* v_new1 = new double[parts.partsCount];
+	vfloat32m1_t vn1V = vle_v_f32m1(v_new1, vl);
+
+	double* v_new2 = new double[parts.partsCount];
+	vfloat32m1_t vn2V = vle_v_f32m1(v_new2, vl);
+
+	//MyVector* t = new MyVector[parts.partsCount];
+	double* t0 = new double[parts.partsCount];
+	vfloat32m1_t t0V = vle_v_f32m1(t0, vl);
+
+	double* t1 = new double[parts.partsCount];
+	vfloat32m1_t t1V = vle_v_f32m1(t1, vl);
+
+	double* t2 = new double[parts.partsCount];
+	vfloat32m1_t t2V = vle_v_f32m1(t2, vl);
+
+
+	//MyVector* pMinus = new MyVector[parts.partsCount];
+	double* pm0 = new double[parts.partsCount];
+	vfloat32m1_t pm0V = vle_v_f32m1(pm0, vl);
+
+	double* pm1 = new double[parts.partsCount];
+	vfloat32m1_t pm1V = vle_v_f32m1(pm1, vl);
+
+	double* pm2 = new double[parts.partsCount];
+	vfloat32m1_t pm2V = vle_v_f32m1(pm2, vl);
+
+
+	//MyVector* pPlus = new MyVector[parts.partsCount];
+	double* pp0 = new double[parts.partsCount];
+	vfloat32m1_t pp0V = vle_v_f32m1(pp0, vl);
+
+	double* pp1 = new double[parts.partsCount];
+	vfloat32m1_t pp1V = vle_v_f32m1(pp1, vl);
+
+	double* pp0 = new double[parts.partsCount];
+	vfloat32m1_t pp2V = vle_v_f32m1(pp2, vl);
+
+
+	//MyVector* p_new = new MyVector[parts.partsCount];
+	double* pn0 = new double[parts.partsCount];
+	vfloat32m1_t pn0V = vle_v_f32m1(pn0, vl);
+
+	double* pn1 = new double[parts.partsCount];
+	vfloat32m1_t pn1V = vle_v_f32m1(pn1, vl);
+
+	double* pn2 = new double[parts.partsCount];
+	vfloat32m1_t pn2V = vle_v_f32m1(pn2, vl);
+
+
 	MyVector* s = new MyVector[parts.partsCount];
 	MyVector* pDeriv = new MyVector[parts.partsCount];
 
@@ -32,7 +115,6 @@ void calculate(TParticle& parts, int partsCount, int iterCount, const MyVector& 
 
 	for (int j = 0; j < iterCount; j++)
 	{
-#pragma omp parallel for simd
 		for (int i = 0; i < partsCount; i++)
 		{
 			double mc = mcbased;
